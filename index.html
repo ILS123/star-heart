@@ -31,15 +31,6 @@
     animation: reveal 1.3s cubic-bezier(.2, .7, .2, 1) forwards;
     white-space: nowrap;
   }
-  .line b {
-    font-weight: 600;
-    color: #ffffff;
-    text-shadow:
-      0 0 10px rgba(255, 235, 250, 0.95),
-      0 0 26px rgba(255, 110, 190, 0.75),
-      0 0 52px rgba(190, 90, 255, 0.45);
-    animation: starPulse 2.4s ease-in-out infinite;
-  }
   .l1 { animation-delay: 0.7s; }
   .l2 { animation-delay: 1.15s; }
   .l3 { animation-delay: 1.6s; }
@@ -56,20 +47,16 @@
   @keyframes reveal {
     to { opacity: 1; transform: none; filter: none; }
   }
-  @keyframes starPulse {
-    0%, 100% { text-shadow: 0 0 10px rgba(255, 235, 250, 0.95), 0 0 26px rgba(255, 110, 190, 0.7), 0 0 46px rgba(190, 90, 255, 0.4); }
-    50% { text-shadow: 0 0 14px rgba(255, 245, 252, 1), 0 0 34px rgba(255, 130, 200, 0.95), 0 0 72px rgba(200, 110, 255, 0.6); }
-  }
 </style>
 </head>
 <body>
 <canvas id="stage"></canvas>
 
 <div class="confession">
-  <p class="line l1"><b>我</b>揽星河入梦来</p>
-  <p class="line l2"><b>喜</b>看月满西楼台</p>
-  <p class="line l3"><b>欢</b>意藏于月色外</p>
-  <p class="line l4"><b>你</b>若抬眸便明白</p>
+  <p class="line l1">我倚窗前等风来</p>
+  <p class="line l2">喜看云散月盈台</p>
+  <p class="line l3">欢声落在灯影外</p>
+  <p class="line l4">你窗前夜色可曾改</p>
   <span class="sign">星光为证 · 心意藏在每一颗星里</span>
 </div>
 
