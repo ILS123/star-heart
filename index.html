@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05030c" />
+<title>星光心跳 · 只为你</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #03020a; overflow: hidden; }
+  canvas { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
+
+  .confession {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: max(5vh, 22px);
+    text-align: center;
+    pointer-events: none;
+    font-family: "Songti SC", "STSong", "SimSun", "Noto Serif SC", serif;
+    font-size: clamp(12px, 1.7vh, 16px);
+    line-height: 1.85;
+    letter-spacing: 0.1em;
+    color: #ffe9f3;
+  }
+  .line {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+    animation: reveal 1.4s cubic-bezier(.2, .7, .2, 1) forwards;
+  }
+  .l1 { animation-delay: 0.9s; }
+  .l2 { animation-delay: 1.4s; }
+  .l3 { animation-delay: 1.9s; }
+  .l4 {
+    animation-delay: 2.5s;
+    margin-top: 0.45em;
+    font-size: 1.22em;
+    letter-spacing: 0.22em;
+    color: #ffffff;
+    animation:
+      reveal 1.4s cubic-bezier(.2, .7, .2, 1) 2.5s forwards,
+      glow 1.5s ease-in-out 4s infinite;
+  }
+  .sign {
+    display: block;
+    margin-top: 1.5em;
+    opacity: 0;
+    font-size: 0.8em;
+    letter-spacing: 0.32em;
+    color: rgba(255, 214, 232, 0.5);
+    animation: reveal 1.6s ease 4s forwards;
+  }
+  @keyframes reveal {
+    to { opacity: 1; transform: none; filter: none; }
+  }
+  @keyframes glow {
+    0%, 100% { text-shadow: 0 0 12px rgba(255, 90, 160, 0.55), 0 0 32px rgba(255, 60, 130, 0.25); }
+    12% { text-shadow: 0 0 22px rgba(255, 130, 185, 0.9), 0 0 60px rgba(255, 60, 130, 0.5); }
+    26% { text-shadow: 0 0 46px rgba(255, 160, 205, 1), 0 0 120px rgba(255, 60, 130, 0.7); }
+    46% { text-shadow: 0 0 16px rgba(255, 100, 165, 0.6), 0 0 40px rgba(255, 60, 130, 0.3); }
+  }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<div class="confession">
+  <p class="line l1">我把心事写进夜幕，</p>
+  <p class="line l2">喜悦便多点了一颗星。</p>
+  <p class="line l3">欢喜时你只要抬头，</p>
+  <p class="line l4">你就会明白，星光为谁而亮</p>
+  <span class="sign">致最特别的你</span>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  const TAU = Math.PI * 2;
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+
+  /* ============ 星光贴图 ============ */
+  const PALETTE = [
+    ['255,255,255', 12],
+    ['255,226,242', 14],
+    ['255,152,200', 20],
+    ['255,84,148', 20],
+    ['255,52,112', 8],
+    ['196,140,255', 8],
+    ['150,214,255', 7],
+    ['255,230,168', 5]
+  ];
+
+  const cumulative = [];
+  let totalW = 0;
+  for (const entry of PALETTE) {
+    totalW += entry[1];
+    cumulative.push(totalW);
+  }
+
+  function pickSpriteIndex() {
+    const r = Math.random() * totalW;
+    for (let i = 0; i < cumulative.length; i++) {
+      if (r <= cumulative[i]) return i;
+    }
+    return 0;
+  }
+
+  function glowSprite(rgb) {
+    const S = 64;
+    const c = document.createElement('canvas');
+    c.width = c.height = S;
+    const g = c.getContext('2d');
+    const grad = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+    grad.addColorStop(0, 'rgba(' + rgb + ',1)');
+    grad.addColorStop(0.16, 'rgba(' + rgb + ',0.9)');
+    grad.addColorStop(0.42, 'rgba(' + rgb + ',0.26)');
+    grad.addColorStop(1, 'rgba(' + rgb + ',0)');
+    g.fillStyle = grad;
+    g.beginPath();
+    g.arc(S / 2, S / 2, S / 2, 0, TAU);
+    g.fill();
+    return c;
+  }
+
+  function sparkSprite() {
+    const S = 128;
+    const c = document.createElement('canvas');
+    c.width = c.height = S;
+    const g = c.getContext('2d');
+    g.translate(S / 2, S / 2);
+    g.globalCompositeOperation = 'lighter';
+    for (const rot of [0, Math.PI / 2]) {
+      g.save();
+      g.rotate(rot);
+      const lg = g.createLinearGradient(-S / 2, 0, S / 2, 0);
+      lg.addColorStop(0, 'rgba(255,255,255,0)');
+      lg.addColorStop(0.5, 'rgba(255,255,255,0.85)');
+      lg.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = lg;
+      g.fillRect(-S / 2, -1.2, S, 2.4);
+      g.restore();
+    }
+    const cg = g.createRadialGradient(0, 0, 0, 0, 0, S * 0.18);
+    cg.addColorStop(0, 'rgba(255,255,255,1)');
+    cg.addColorStop(0.4, 'rgba(255,220,240,0.35)');
+    cg.addColorStop(1, 'rgba(255,180,220,0)');
+    g.fillStyle = cg;
+    g.beginPath();
+    g.arc(0, 0, S * 0.18, 0, TAU);
+    g.fill();
+    return c;
+  }
+
+  const sprites = PALETTE.map(entry => glowSprite(entry[0]));
+  const spark = sparkSprite();
+
+  /* ============ 心形曲线（屏幕坐标） ============ */
+  function heartPoint(t) {
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    return [x, -y - 4];
+  }
+
+  /* ============ 状态 ============ */
+  let W = 0;
+  let H = 0;
+  let DPR = 1;
+  let cx = 0;
+  let cy = 0;
+  let unit = 1;
+  let bgGradient = null;
+  let trail = null;
+  let tctx = null;
+  let ripplePath = null;
+
+  const pointer = { x: 0, y: 0, active: false, power: 0 };
+  const particles = [];
+  const stars = [];
+  const bursts = [];
+  const ripples = [];
+  const meteors = [];
+
+  let nextMeteorAt = 2.5;
+  let lastBeatIndex = -1;
+
+  /* ============ 构建 ============ */
+  function buildParticles() {
+    particles.length = 0;
+    const count = Math.max(850, Math.min(2000, Math.round((W * H) / 1000)));
+    for (let i = 0; i < count; i++) {
+      const t = Math.random() * TAU;
+      const pt = heartPoint(t);
+      const layer = Math.random();
+      let r;
+      if (layer < 0.4) {
+        r = 0.985 + (Math.random() - 0.5) * 0.03;   // 清晰轮廓
+      } else if (layer < 0.66) {
+        r = 0.9 + Math.random() * 0.085;            // 内圈
+      } else {
+        r = Math.pow(Math.random(), 0.38) * 0.9;    // 内部星云
+      }
+
+      const jitter = 0.018;
+      const bx = pt[0] * r + (Math.random() - 0.5) * jitter;
+      const by = pt[1] * r + (Math.random() - 0.5) * jitter;
+      const depth = 0.45 + Math.random() * 0.75;
+
+      particles.push({
+        bx: bx,
+        by: by,
+        sprite: pickSpriteIndex(),
+        size: unit * (0.05 + Math.random() * 0.11) * depth,
+        alpha: 0.25 + Math.random() * 0.55,
+        tw: Math.random() * TAU,
+        tws: 0.7 + Math.random() * 2.2,
+        driftAmp: 0.8 + Math.random() * 3.2,
+        driftSpeed: 0.25 + Math.random() * 1.1,
+        driftPh: Math.random() * TAU,
+        swirlSpeed: 0.2 + Math.random() * 0.8,
+        swirlPh: Math.random() * TAU,
+        delay: Math.hypot(bx, by) * 0.012,
+        glint: Math.random() < 0.07
+      });
+    }
+  }
+
+  function buildStars() {
+    stars.length = 0;
+    const count = Math.round((W * H) / 7000) + 80;
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: 0.4 + Math.random() * 1.5,
+        a: 0.08 + Math.random() * 0.42,
+        tw: Math.random() * TAU,
+        tws: 0.2 + Math.random() * 0.9,
+        vy: 1 + Math.random() * 5,
+        tint: Math.random() < 0.22 ? 6 : 0
+      });
+    }
+  }
+
+  function buildRipplePath() {
+    const p = new Path2D();
+    const steps = 260;
+    for (let i = 0; i <= steps; i++) {
+      const t = (i / steps) * TAU;
+      const pt = heartPoint(t);
+      const x = pt[0] * unit;
+      const y = pt[1] * unit;
+      if (i === 0) p.moveTo(x, y);
+      else p.lineTo(x, y);
+    }
+    p.closePath();
+    ripplePath = p;
+  }
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    cx = W / 2;
+    cy = H * 0.4;
+    unit = Math.min(W / 34, H / 46);
+
+    // 低分辨率辉光图层：叠加残影，形成 bloom
+    trail = document.createElement('canvas');
+    trail.width = Math.max(1, Math.round(W));
+    trail.height = Math.max(1, Math.round(H));
+    tctx = trail.getContext('2d');
+    tctx.lineCap = 'round';
+
+    bgGradient = ctx.createRadialGradient(cx, cy * 0.9, 0, cx, cy, Math.max(W, H) * 0.8);
+    bgGradient.addColorStop(0, '#1a0d29');
+    bgGradient.addColorStop(0.42, '#0b0616');
+    bgGradient.addColorStop(1, '#03020a');
+
+    buildParticles();
+    buildStars();
+    buildRipplePath();
+  }
+
+  /* ============ 心跳曲线 ============ */
+  const BEAT = 1.5;
+  function beat(time, delay) {
+    let p = ((time - delay) % BEAT) / BEAT;
+    if (p < 0) p += 1;
+    const g = (x, mu, s) => Math.exp(-((x - mu) * (x - mu)) / (2 * s * s));
+    return 0.058 * g(p, 0.06, 0.033) + 0.034 * g(p, 0.24, 0.058);
+  }
+
+  /* ============ 特效 ============ */
+  function spawnBurst() {
+    const n = 30 + Math.round(Math.random() * 16);
+    for (let i = 0; i < n; i++) {
+      const t = Math.random() * TAU;
+      const pt = heartPoint(t);
+      const r = 0.94 + Math.random() * 0.1;
+      const x = cx + pt[0] * r * unit;
+      const y = cy + pt[1] * r * unit;
+      const ang = Math.atan2(pt[1], pt[0]) + (Math.random() - 0.5) * 0.9;
+      const sp = unit * (0.6 + Math.random() * 2.4);
+      bursts.push({
+        x: x,
+        y: y,
+        vx: Math.cos(ang) * sp,
+        vy: Math.sin(ang) * sp,
+        age: 0,
+        max: 0.7 + Math.random() * 0.9,
+        size: unit * (0.04 + Math.random() * 0.07),
+        sprite: pickSpriteIndex()
+      });
+    }
+    if (bursts.length > 700) bursts.splice(0, bursts.length - 700);
+  }
+
+  function spawnMeteor() {
+    const fromLeft = Math.random() < 0.5;
+    const speed = 260 + Math.random() * 260;
+    meteors.push({
+      x: fromLeft ? -40 : W + 40,
+      y: Math.random() * H * 0.45,
+      vx: (fromLeft ? 1 : -1) * speed,
+      vy: speed * (0.32 + Math.random() * 0.25),
+      age: 0,
+      max: 4
+    });
+  }
+
+  /* ============ 渲染 ============ */
+  function draw(time, dt) {
+    /* --- 背景 --- */
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.globalCompositeOperation = 'lighter';
+
+    /* --- 星尘 --- */
+    for (const s of stars) {
+      s.y -= s.vy * dt;
+      if (s.y < -4) {
+        s.y = H + 4;
+        s.x = Math.random() * W;
+      }
+      const tw = 0.55 + 0.45 * Math.sin(time * s.tws + s.tw);
+      ctx.globalAlpha = s.a * tw;
+      const rr = s.r * 4;
+      ctx.drawImage(sprites[s.tint], s.x - rr, s.y - rr, rr * 2, rr * 2);
+    }
+
+    /* --- 流动星云 --- */
+    const neb1x = cx + Math.cos(time * 0.07) * W * 0.16;
+    const neb1y = cy + Math.sin(time * 0.05) * H * 0.14;
+    const neb1 = ctx.createRadialGradient(neb1x, neb1y, 0, neb1x, neb1y, unit * 20);
+    neb1.addColorStop(0, 'rgba(150,40,170,0.10)');
+    neb1.addColorStop(1, 'rgba(150,40,170,0)');
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = neb1;
+    ctx.fillRect(0, 0, W, H);
+
+    const neb2x = cx + Math.cos(time * 0.045 + 2.2) * W * 0.2;
+    const neb2y = cy + Math.sin(time * 0.06 + 1.1) * H * 0.16;
+    const neb2 = ctx.createRadialGradient(neb2x, neb2y, 0, neb2x, neb2y, unit * 17);
+    neb2.addColorStop(0, 'rgba(40,110,200,0.08)');
+    neb2.addColorStop(1, 'rgba(40,110,200,0)');
+    ctx.fillStyle = neb2;
+    ctx.fillRect(0, 0, W, H);
+
+    /* --- 旋转光芒 --- */
+    if (ctx.createConicGradient) {
+      const cg = ctx.createConicGradient(time * 0.07, cx, cy);
+      for (let i = 0; i < 12; i++) {
+        const a = i / 12;
+        cg.addColorStop(a, 'rgba(255,120,180,0)');
+        cg.addColorStop(a + 0.02, 'rgba(255,150,205,0.05)');
+        cg.addColorStop(a + 0.042, 'rgba(255,120,180,0)');
+      }
+      ctx.fillStyle = cg;
+      ctx.beginPath();
+      ctx.arc(cx, cy, unit * 24, 0, TAU);
+      ctx.fill();
+    }
+
+    /* --- 心跳光晕 --- */
+    const coreBeat = beat(time, 0);
+    const haloR = unit * (13 + coreBeat * 34);
+    const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, haloR);
+    halo.addColorStop(0, 'rgba(255,70,130,' + (0.1 + coreBeat * 1.3) + ')');
+    halo.addColorStop(0.4, 'rgba(190,50,130,' + (0.05 + coreBeat * 0.6) + ')');
+    halo.addColorStop(1, 'rgba(120,20,90,0)');
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(cx, cy, haloR, 0, TAU);
+    ctx.fill();
+
+    /* --- 心跳节拍特效 --- */
+    const beatIndex = Math.floor(time / BEAT);
+    if (beatIndex !== lastBeatIndex) {
+      lastBeatIndex = beatIndex;
+      spawnBurst();
+      ripples.push({ age: 0, max: 1.5 });
+      if (ripples.length > 8) ripples.shift();
+    }
+
+    /* --- 辉光图层：残影 fade --- */
+    tctx.globalCompositeOperation = 'destination-out';
+    tctx.fillStyle = 'rgba(0,0,0,0.2)';
+    tctx.fillRect(0, 0, W, H);
+    tctx.globalCompositeOperation = 'lighter';
+
+    /* --- 心跳波纹 --- */
+    for (const rp of ripples) {
+      rp.age += dt;
+      const p = rp.age / rp.max;
+      if (p >= 1) continue;
+      const s = 1 + p * 0.6;
+      const a = (1 - p) * (1 - p) * 0.5;
+      tctx.save();
+      tctx.translate(cx, cy);
+      tctx.scale(s, s);
+      tctx.strokeStyle = 'rgba(255,120,180,' + a + ')';
+      tctx.lineWidth = 2.4 / s;
+      tctx.shadowColor = 'rgba(255,80,160,0.9)';
+      tctx.shadowBlur = 26;
+      tctx.stroke(ripplePath);
+      tctx.restore();
+    }
+
+    /* --- 星光粒子 --- */
+    for (const p of particles) {
+      const pulse = 1 + beat(time, p.delay + 0.02);
+      const swirl = Math.sin(time * p.swirlSpeed + p.swirlPh) * 0.012;
+      const cs = Math.cos(swirl);
+      const sn = Math.sin(swirl);
+      const bx = p.bx * cs - p.by * sn;
+      const by = p.bx * sn + p.by * cs;
+
+      let x = cx + bx * pulse * unit + Math.sin(time * p.driftSpeed + p.driftPh) * p.driftAmp;
+      let y = cy + by * pulse * unit + Math.cos(time * p.driftSpeed * 0.8 + p.driftPh) * p.driftAmp * 0.6;
+
+      if (pointer.active && pointer.power > 0.01) {
+        const dx = x - pointer.x;
+        const dy = y - pointer.y;
+        const d2 = dx * dx + dy * dy;
+        const R = 150;
+        if (d2 < R * R && d2 > 0.01) {
+          const d = Math.sqrt(d2);
+          const f = (1 - d / R) * 44 * pointer.power;
+          x += (dx / d) * f;
+          y += (dy / d) * f;
+        }
+      }
+
+      const tw = 0.5 + 0.5 * Math.sin(time * p.tws + p.tw);
+      const alpha = Math.min(1, p.alpha * (0.5 + 0.7 * tw) * (0.9 + coreBeat * 7)) * 0.5;
+      const size = p.size * (0.85 + 0.3 * tw) * (1 + coreBeat * 0.3);
+
+      tctx.globalAlpha = alpha;
+      tctx.drawImage(sprites[p.sprite], x - size, y - size, size * 2, size * 2);
+
+      if (p.glint) {
+        const gs = size * (3.2 + tw * 2.4);
+        tctx.globalAlpha = alpha * 0.75 * tw;
+        tctx.drawImage(spark, x - gs, y - gs, gs * 2, gs * 2);
+      }
+    }
+
+    /* --- 心跳迸发 --- */
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      const b = bursts[i];
+      b.age += dt;
+      if (b.age >= b.max) {
+        bursts.splice(i, 1);
+        continue;
+      }
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      b.vx *= 0.985;
+      b.vy *= 0.985;
+      const k = 1 - b.age / b.max;
+      tctx.globalAlpha = k * k * 0.9;
+      const sz = b.size * (0.6 + k * 0.7);
+      tctx.drawImage(sprites[b.sprite], b.x - sz, b.y - sz, sz * 2, sz * 2);
+    }
+
+    /* --- 流星 --- */
+    if (time > nextMeteorAt) {
+      spawnMeteor();
+      nextMeteorAt = time + 2.2 + Math.random() * 3.5;
+    }
+    for (let i = meteors.length - 1; i >= 0; i--) {
+      const m = meteors[i];
+      m.age += dt;
+      m.x += m.vx * dt;
+      m.y += m.vy * dt;
+      if (m.age > m.max || m.x < -120 || m.x > W + 120 || m.y > H + 120) {
+        meteors.splice(i, 1);
+        continue;
+      }
+      const tail = 0.16;
+      const tx = m.x - m.vx * tail;
+      const ty = m.y - m.vy * tail;
+      const grad = tctx.createLinearGradient(tx, ty, m.x, m.y);
+      grad.addColorStop(0, 'rgba(170,215,255,0)');
+      grad.addColorStop(0.7, 'rgba(200,232,255,0.55)');
+      grad.addColorStop(1, 'rgba(255,255,255,0.95)');
+      tctx.globalAlpha = 0.85;
+      tctx.strokeStyle = grad;
+      tctx.lineWidth = 1.6;
+      tctx.beginPath();
+      tctx.moveTo(tx, ty);
+      tctx.lineTo(m.x, m.y);
+      tctx.stroke();
+      tctx.globalAlpha = 0.22;
+      tctx.drawImage(sprites[0], m.x - 14, m.y - 14, 28, 28);
+    }
+
+    /* --- 辉光合成到主画布 --- */
+    ctx.globalAlpha = 1;
+    ctx.drawImage(trail, 0, 0, W, H);
+
+    tctx.globalAlpha = 1;
+    ctx.globalAlpha = 1;
+  }
+
+  /* ============ 主循环 ============ */
+  let last = performance.now();
+  let time = 0;
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    time += dt;
+    draw(time, dt);
+    requestAnimationFrame(loop);
+  }
+
+  /* ============ 交互 ============ */
+  window.addEventListener('resize', resize);
+  window.addEventListener('pointermove', e => {
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    pointer.active = true;
+    pointer.power = Math.min(1, pointer.power + 0.15);
+  });
+  window.addEventListener('pointerleave', () => {
+    pointer.active = false;
+    pointer.power = 0;
+  });
+  window.addEventListener('pointerdown', e => {
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    pointer.active = true;
+    pointer.power = 1;
+    ripples.push({ age: 0, max: 1.2 });
+    spawnBurst();
+  });
+
+  resize();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
