@@ -18,9 +18,9 @@
     text-align: center;
     pointer-events: none;
     font-family: "Songti SC", "STSong", "SimSun", "Noto Serif SC", serif;
-    font-size: clamp(12px, 1.7vh, 16px);
-    line-height: 1.85;
-    letter-spacing: 0.1em;
+    font-size: clamp(13px, 1.9vh, 19px);
+    line-height: 1.95;
+    letter-spacing: 0.12em;
     color: #ffe9f3;
   }
   .line {
@@ -29,21 +29,18 @@
     filter: blur(6px);
     animation: reveal 1.4s cubic-bezier(.2, .7, .2, 1) forwards;
   }
-  .l1 { animation-delay: 0.6s; }
-  .l2 { animation-delay: 1.0s; }
-  .l3 { animation-delay: 1.4s; }
-  .l4 { animation-delay: 1.8s; }
-  .l5 { animation-delay: 2.2s; }
-  .l6 { animation-delay: 2.6s; }
-  .l7 {
-    animation-delay: 3.1s;
-    margin-top: 0.4em;
-    font-size: 1.15em;
-    letter-spacing: 0.16em;
+  .l1 { animation-delay: 0.8s; }
+  .l2 { animation-delay: 1.3s; }
+  .l3 { animation-delay: 1.8s; }
+  .l4 {
+    animation-delay: 2.4s;
+    margin-top: 0.45em;
+    font-size: 1.25em;
+    letter-spacing: 0.24em;
     color: #ffffff;
     animation:
-      reveal 1.2s cubic-bezier(.2, .7, .2, 1) 3.1s forwards,
-      glow 1.5s ease-in-out 4.8s infinite;
+      reveal 1.3s cubic-bezier(.2, .7, .2, 1) 2.4s forwards,
+      glow 1.5s ease-in-out 3.9s infinite;
   }
   .sign {
     display: block;
@@ -52,7 +49,7 @@
     font-size: 0.8em;
     letter-spacing: 0.32em;
     color: rgba(255, 214, 232, 0.5);
-    animation: reveal 1.6s ease 4s forwards;
+    animation: reveal 1.6s ease 3.5s forwards;
   }
   @keyframes reveal {
     to { opacity: 1; transform: none; filter: none; }
@@ -69,13 +66,10 @@
 <canvas id="stage"></canvas>
 
 <div class="confession">
-  <p class="line l1">周末的夜，星星落得很慢。</p>
-  <p class="line l2">嘉许的话，在嘴边绕了又绕。</p>
-  <p class="line l3">华灯初上，我又念起你的名字。</p>
-  <p class="line l4">我把那三个字，轻轻放进心里。</p>
-  <p class="line l5">喜欢是藏不住的，只好借星光说。</p>
-  <p class="line l6">欢喜是你抬头时，眼里的光。</p>
-  <p class="line l7">你若抬头，满天星光都是答案。</p>
+  <p class="line l1">我把心事写进夜幕，</p>
+  <p class="line l2">喜悦便多点了一颗星。</p>
+  <p class="line l3">欢喜时你只要抬头，</p>
+  <p class="line l4">你就会明白，星光为谁而亮</p>
   <span class="sign">致最特别的你</span>
 </div>
 
