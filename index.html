@@ -14,51 +14,54 @@
     position: fixed;
     left: 0;
     right: 0;
-    bottom: max(5vh, 22px);
+    bottom: max(4vh, 16px);
     text-align: center;
     pointer-events: none;
     font-family: "Songti SC", "STSong", "SimSun", "Noto Serif SC", serif;
-    font-size: clamp(13px, 1.9vh, 19px);
-    line-height: 1.95;
-    letter-spacing: 0.12em;
+    font-size: clamp(12px, 1.55vh, 16.5px);
+    line-height: 1.92;
+    letter-spacing: 0.14em;
     color: #ffe9f3;
+    text-shadow: 0 0 14px rgba(255, 120, 180, 0.35);
   }
   .line {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(12px);
     filter: blur(6px);
-    animation: reveal 1.4s cubic-bezier(.2, .7, .2, 1) forwards;
+    animation: reveal 1.3s cubic-bezier(.2, .7, .2, 1) forwards;
+    white-space: nowrap;
   }
-  .l1 { animation-delay: 0.8s; }
-  .l2 { animation-delay: 1.3s; }
-  .l3 { animation-delay: 1.8s; }
-  .l4 {
-    animation-delay: 2.4s;
-    margin-top: 0.45em;
-    font-size: 1.25em;
-    letter-spacing: 0.24em;
+  .line b {
+    font-weight: 600;
     color: #ffffff;
-    animation:
-      reveal 1.3s cubic-bezier(.2, .7, .2, 1) 2.4s forwards,
-      glow 1.5s ease-in-out 3.9s infinite;
+    text-shadow:
+      0 0 10px rgba(255, 235, 250, 0.95),
+      0 0 26px rgba(255, 110, 190, 0.75),
+      0 0 52px rgba(190, 90, 255, 0.45);
+    animation: starPulse 2.4s ease-in-out infinite;
   }
+  .l1 { animation-delay: 0.7s; }
+  .l2 { animation-delay: 1.15s; }
+  .l3 { animation-delay: 1.6s; }
+  .l4 { animation-delay: 2.05s; }
+  .l5 { animation-delay: 2.5s; }
+  .l6 { animation-delay: 2.95s; }
+  .l7 { animation-delay: 3.4s; }
   .sign {
     display: block;
-    margin-top: 1.5em;
+    margin-top: 1.2em;
     opacity: 0;
-    font-size: 0.8em;
-    letter-spacing: 0.32em;
+    font-size: 0.78em;
+    letter-spacing: 0.34em;
     color: rgba(255, 214, 232, 0.5);
-    animation: reveal 1.6s ease 3.5s forwards;
+    animation: reveal 1.6s ease 4.1s forwards;
   }
   @keyframes reveal {
     to { opacity: 1; transform: none; filter: none; }
   }
-  @keyframes glow {
-    0%, 100% { text-shadow: 0 0 12px rgba(255, 90, 160, 0.55), 0 0 32px rgba(255, 60, 130, 0.25); }
-    12% { text-shadow: 0 0 22px rgba(255, 130, 185, 0.9), 0 0 60px rgba(255, 60, 130, 0.5); }
-    26% { text-shadow: 0 0 46px rgba(255, 160, 205, 1), 0 0 120px rgba(255, 60, 130, 0.7); }
-    46% { text-shadow: 0 0 16px rgba(255, 100, 165, 0.6), 0 0 40px rgba(255, 60, 130, 0.3); }
+  @keyframes starPulse {
+    0%, 100% { text-shadow: 0 0 10px rgba(255, 235, 250, 0.95), 0 0 26px rgba(255, 110, 190, 0.7), 0 0 46px rgba(190, 90, 255, 0.4); }
+    50% { text-shadow: 0 0 14px rgba(255, 245, 252, 1), 0 0 34px rgba(255, 130, 200, 0.95), 0 0 72px rgba(200, 110, 255, 0.6); }
   }
 </style>
 </head>
@@ -66,11 +69,14 @@
 <canvas id="stage"></canvas>
 
 <div class="confession">
-  <p class="line l1">我把心事写进夜幕，</p>
-  <p class="line l2">喜悦便多点了一颗星。</p>
-  <p class="line l3">欢喜时你只要抬头，</p>
-  <p class="line l4">你就会明白，星光为谁而亮</p>
-  <span class="sign">致最特别的你</span>
+  <p class="line l1"><b>周</b>揽星河入梦来</p>
+  <p class="line l2"><b>嘉</b>期未语心先猜</p>
+  <p class="line l3"><b>华</b>年恰好逢君在</p>
+  <p class="line l4"><b>我</b>寄春风待花开</p>
+  <p class="line l5"><b>喜</b>看月满西楼台</p>
+  <p class="line l6"><b>欢</b>心暗许不曾改</p>
+  <p class="line l7"><b>你</b>似星河落满怀</p>
+  <span class="sign">星光为证 · 心意藏在每一颗星里</span>
 </div>
 
 <script>
@@ -83,14 +89,18 @@
 
   /* ============ 星光贴图 ============ */
   const PALETTE = [
-    ['255,255,255', 12],
-    ['255,226,242', 14],
-    ['255,152,200', 20],
-    ['255,84,148', 20],
-    ['255,52,112', 8],
-    ['196,140,255', 8],
-    ['150,214,255', 7],
-    ['255,230,168', 5]
+    ['255,255,255', 11],
+    ['255,232,246', 12],
+    ['255,176,214', 14],
+    ['255,102,166', 15],
+    ['255,64,120', 9],
+    ['255,140,110', 7],
+    ['255,224,150', 7],
+    ['214,160,255', 10],
+    ['160,140,255', 8],
+    ['120,214,255', 8],
+    ['120,255,214', 5],
+    ['255,120,220', 8]
   ];
 
   const cumulative = [];
@@ -189,18 +199,18 @@
   /* ============ 构建 ============ */
   function buildParticles() {
     particles.length = 0;
-    const count = Math.max(850, Math.min(2000, Math.round((W * H) / 1000)));
+    const count = Math.max(1100, Math.min(2600, Math.round((W * H) / 620)));
     for (let i = 0; i < count; i++) {
       const t = Math.random() * TAU;
       const pt = heartPoint(t);
       const layer = Math.random();
       let r;
-      if (layer < 0.4) {
+      if (layer < 0.34) {
         r = 0.985 + (Math.random() - 0.5) * 0.03;   // 清晰轮廓
-      } else if (layer < 0.66) {
-        r = 0.9 + Math.random() * 0.085;            // 内圈
+      } else if (layer < 0.6) {
+        r = 0.88 + Math.random() * 0.1;             // 内圈
       } else {
-        r = Math.pow(Math.random(), 0.38) * 0.9;    // 内部星云
+        r = Math.sqrt(Math.random()) * 0.92;        // 内部星云（均匀填充）
       }
 
       const jitter = 0.018;
@@ -212,8 +222,8 @@
         bx: bx,
         by: by,
         sprite: pickSpriteIndex(),
-        size: unit * (0.05 + Math.random() * 0.11) * depth,
-        alpha: 0.25 + Math.random() * 0.55,
+        size: unit * (0.05 + Math.random() * 0.115) * depth,
+        alpha: 0.28 + Math.random() * 0.58,
         tw: Math.random() * TAU,
         tws: 0.7 + Math.random() * 2.2,
         driftAmp: 0.8 + Math.random() * 3.2,
@@ -222,7 +232,7 @@
         swirlSpeed: 0.2 + Math.random() * 0.8,
         swirlPh: Math.random() * TAU,
         delay: Math.hypot(bx, by) * 0.012,
-        glint: Math.random() < 0.07
+        glint: Math.random() < 0.1
       });
     }
   }
@@ -270,8 +280,8 @@
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
     cx = W / 2;
-    cy = H * 0.4;
-    unit = Math.min(W / 34, H / 46);
+    cy = H * 0.36;
+    unit = Math.min(W / 36, H / 52);
 
     // 低分辨率辉光图层：叠加残影，形成 bloom
     trail = document.createElement('canvas');
@@ -381,11 +391,13 @@
     /* --- 旋转光芒 --- */
     if (ctx.createConicGradient) {
       const cg = ctx.createConicGradient(time * 0.07, cx, cy);
-      for (let i = 0; i < 12; i++) {
-        const a = i / 12;
-        cg.addColorStop(a, 'rgba(255,120,180,0)');
-        cg.addColorStop(a + 0.02, 'rgba(255,150,205,0.05)');
-        cg.addColorStop(a + 0.042, 'rgba(255,120,180,0)');
+      const RAYS = 18;
+      for (let i = 0; i < RAYS; i++) {
+        const a = i / RAYS;
+        const hue = (i * 360) / RAYS + time * 18;
+        cg.addColorStop(a, 'hsla(' + hue + ',100%,68%,0)');
+        cg.addColorStop(a + 0.022, 'hsla(' + hue + ',100%,68%,0.045)');
+        cg.addColorStop(a + 0.05, 'hsla(' + hue + ',100%,68%,0)');
       }
       ctx.fillStyle = cg;
       ctx.beginPath();
@@ -464,7 +476,7 @@
       }
 
       const tw = 0.5 + 0.5 * Math.sin(time * p.tws + p.tw);
-      const alpha = Math.min(1, p.alpha * (0.5 + 0.7 * tw) * (0.9 + coreBeat * 7)) * 0.5;
+      const alpha = Math.min(1, p.alpha * (0.5 + 0.7 * tw) * (0.9 + coreBeat * 7)) * 0.6;
       const size = p.size * (0.85 + 0.3 * tw) * (1 + coreBeat * 0.3);
 
       tctx.globalAlpha = alpha;
